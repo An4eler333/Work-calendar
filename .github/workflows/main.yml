@@ -1,0 +1,36 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Unpack Android zip
+        run: |
+          mkdir -p android-app
+          for z in bulldozer-android-widget.zip android-project.zip; do
+            if [ -f "$z" ]; then
+              unzip -o "$z" -d android-app
+              break
+            fi
+          done
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+      - name: Build Debug APK
+        working-directory: android-app
+        run: gradle assembleDebug --no-daemon
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bulldozer-2-2-apk
+          path: android-app/app/build/outputs/apk/debug/app-debug.apk
