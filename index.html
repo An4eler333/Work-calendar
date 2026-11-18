@@ -1,0 +1,2240 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0b0d10">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Бульдозер 2/2">
+  <title>Календарь смен 2/2 — Машинист бульдозера</title>
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/svg+xml" href="./icon.svg">
+  <style>
+    :root {
+      --bg: #0b0d10;
+      --surface: #141820;
+      --surface-elevated: #1b212c;
+      --surface-glass: rgba(20, 24, 32, 0.92);
+      --border: rgba(255, 255, 255, 0.08);
+      --border-focus: rgba(245, 158, 11, 0.5);
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      
+      --accent: #f59e0b;
+      --accent-glow: rgba(245, 158, 11, 0.25);
+      
+      /* Shift Palette */
+      --shift-day: #f59e0b;
+      --shift-day-bg: rgba(245, 158, 11, 0.16);
+      --shift-night: #818cf8;
+      --shift-night-bg: rgba(129, 140, 248, 0.18);
+      --shift-holiday: #ec4899;
+      --shift-holiday-bg: rgba(236, 72, 153, 0.18);
+      --shift-extra: #06b6d4;
+      --shift-extra-bg: rgba(6, 182, 212, 0.18);
+      --shift-sleep: #64748b;
+      --shift-sleep-bg: rgba(100, 116, 139, 0.15);
+      --shift-off: #475569;
+      --shift-off-bg: rgba(71, 85, 105, 0.12);
+      --shift-vacation: #10b981;
+      --shift-vacation-bg: rgba(16, 185, 129, 0.15);
+      --shift-sick: #f43f5e;
+      --shift-sick-bg: rgba(244, 63, 94, 0.15);
+      
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --radius-full: 9999px;
+      
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    [data-theme="light"] {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --surface-elevated: #f1f5f9;
+      --surface-glass: rgba(255, 255, 255, 0.94);
+      --border: rgba(0, 0, 0, 0.08);
+      --border-focus: rgba(217, 119, 6, 0.5);
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --text-dim: #94a3b8;
+      --accent: #d97706;
+      --accent-glow: rgba(217, 119, 6, 0.15);
+      --shift-day-bg: rgba(245, 158, 11, 0.18);
+      --shift-night-bg: rgba(99, 102, 241, 0.18);
+      --shift-off-bg: rgba(148, 163, 184, 0.2);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding-top: var(--safe-top);
+      padding-bottom: var(--safe-bottom);
+      overflow-x: hidden;
+    }
+
+    #app {
+      width: 100%;
+      max-width: 480px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      background: var(--bg);
+      padding: 10px 14px 90px 14px;
+    }
+
+    /* HEADER */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 2px 10px 2px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 14px var(--accent-glow);
+      font-size: 1.15rem;
+    }
+
+    .brand-text h1 {
+      font-size: 1.05rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+    }
+
+    .brand-text span {
+      font-size: 0.7rem;
+      color: var(--accent);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .icon-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .icon-btn:active {
+      transform: scale(0.92);
+      background: var(--surface-elevated);
+    }
+
+    .icon-btn svg {
+      width: 17px;
+      height: 17px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+    }
+
+    /* SUMMARY HERO CARD */
+    .hero-card {
+      background: linear-gradient(145deg, #181d28, #12151d);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      margin-bottom: 12px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    .hero-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #f59e0b, #818cf8, #10b981);
+    }
+
+    .hero-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 4px;
+    }
+
+    .hero-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+
+    .hero-month-tag {
+      font-size: 0.72rem;
+      color: var(--accent);
+      font-weight: 700;
+      background: rgba(245, 158, 11, 0.12);
+      padding: 3px 8px;
+      border-radius: var(--radius-full);
+      border: 1px solid rgba(245, 158, 11, 0.25);
+    }
+
+    .hero-payout {
+      font-size: 2.1rem;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      color: #10b981;
+      margin-bottom: 2px;
+    }
+
+    .hero-payout span.curr {
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+
+    .hero-subrow {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.76rem;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+    }
+
+    .hero-subrow .rate-pill {
+      color: #fbbf24;
+      font-weight: 700;
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+    }
+
+    .metric-cell {
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 6px;
+      text-align: center;
+    }
+
+    .metric-val {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.1;
+    }
+
+    .metric-title {
+      font-size: 0.62rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-top: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+
+    /* LIVE STATUS BAR */
+    .live-status-bar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 10px 14px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .live-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pulse-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #818cf8;
+      box-shadow: 0 0 8px #818cf8;
+      animation: pulse 1.8s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.8); }
+    }
+
+    .live-text-main {
+      font-size: 0.8rem;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .live-text-sub {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+    }
+
+    .live-time-now {
+      font-size: 0.9rem;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      color: var(--text);
+    }
+
+    /* ACTION BUTTONS */
+    .action-row {
+      display: grid;
+      grid-template-columns: 1.7fr 1fr;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .btn-action-primary {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #0b0d10;
+      border: none;
+      border-radius: var(--radius-md);
+      padding: 11px 12px;
+      font-size: 0.82rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+      box-shadow: 0 4px 14px var(--accent-glow);
+    }
+
+    .btn-action-primary:active {
+      transform: scale(0.97);
+    }
+
+    .btn-action-primary svg {
+      width: 17px;
+      height: 17px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2.3;
+    }
+
+    .btn-action-secondary {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: var(--radius-md);
+      padding: 11px 10px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+
+    .btn-action-secondary:active {
+      background: var(--surface-elevated);
+      transform: scale(0.97);
+    }
+
+    .btn-action-secondary svg {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2.2;
+    }
+
+    /* MONTH NAV */
+    .month-nav {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 6px 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .month-title {
+      font-size: 1rem;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      text-transform: capitalize;
+    }
+
+    .nav-arrows {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .nav-arrow {
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      color: var(--text);
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .nav-arrow:active {
+      background: var(--accent);
+      color: #0b0d10;
+    }
+
+    .nav-arrow svg {
+      width: 15px;
+      height: 15px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2.5;
+    }
+
+    .today-pill {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--accent);
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.25);
+      border-radius: 6px;
+      padding: 3px 8px;
+      cursor: pointer;
+      margin-right: 4px;
+    }
+
+    /* CALENDAR GRID */
+    .calendar-container {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 12px 8px;
+      margin-bottom: 12px;
+    }
+
+    .weekdays-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      text-align: center;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--text-dim);
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 6px;
+    }
+
+    .weekdays-grid div.weekend {
+      color: #f43f5e;
+      opacity: 0.85;
+    }
+
+    .days-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+    }
+
+    .day-cell {
+      min-height: 60px;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      padding: 4px 2px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.12s ease;
+    }
+
+    .day-cell:active {
+      transform: scale(0.92);
+      background: var(--surface-elevated);
+    }
+
+    .day-cell.other-month {
+      opacity: 0.2;
+    }
+
+    .day-cell.is-today {
+      border: 1.5px solid var(--accent);
+      background: rgba(245, 158, 11, 0.08);
+    }
+
+    .day-cell.is-today .day-number {
+      color: var(--accent);
+      font-weight: 800;
+    }
+
+    .day-top {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 3px;
+    }
+
+    .day-number {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .day-check {
+      font-size: 0.65rem;
+      line-height: 1;
+    }
+
+    /* Shift Badge inside day cell */
+    .shift-pill {
+      width: 100%;
+      border-radius: 6px;
+      padding: 2px 1px;
+      text-align: center;
+      font-size: 0.66rem;
+      font-weight: 800;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      line-height: 1.1;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    .shift-pill .shift-name {
+      font-size: 0.7rem;
+      letter-spacing: -0.01em;
+    }
+
+    .shift-pill .shift-hours {
+      font-size: 0.58rem;
+      font-weight: 600;
+      opacity: 0.9;
+    }
+
+    .shift-pill.type-day {
+      background: var(--shift-day-bg);
+      color: var(--shift-day);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+    }
+    .shift-pill.type-night {
+      background: var(--shift-night-bg);
+      color: var(--shift-night);
+      border: 1px solid rgba(129, 140, 248, 0.4);
+    }
+    .shift-pill.type-holiday {
+      background: var(--shift-holiday-bg);
+      color: var(--shift-holiday);
+      border: 1px solid rgba(236, 72, 153, 0.4);
+    }
+    .shift-pill.type-extra {
+      background: var(--shift-extra-bg);
+      color: var(--shift-extra);
+      border: 1px solid rgba(6, 182, 212, 0.4);
+    }
+    .shift-pill.type-sleep {
+      background: var(--shift-sleep-bg);
+      color: #94a3b8;
+      border: 1px solid rgba(100, 116, 139, 0.25);
+    }
+    .shift-pill.type-off {
+      background: var(--shift-off-bg);
+      color: var(--text-dim);
+      border: 1px solid transparent;
+    }
+    .shift-pill.type-vacation {
+      background: var(--shift-vacation-bg);
+      color: var(--shift-vacation);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+    }
+    .shift-pill.type-sick {
+      background: var(--shift-sick-bg);
+      color: var(--shift-sick);
+      border: 1px solid rgba(244, 63, 94, 0.35);
+    }
+
+    /* PAYSLIP BREAKDOWN */
+    .payslip-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+
+    .payslip-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 8px;
+    }
+
+    .payslip-title {
+      font-size: 0.82rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+
+    .calc-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.8rem;
+      padding: 4px 0;
+    }
+
+    .calc-row.highlight {
+      border-top: 1px dashed var(--border);
+      margin-top: 6px;
+      padding-top: 8px;
+      font-weight: 700;
+    }
+
+    .calc-label {
+      color: var(--text-muted);
+    }
+
+    .calc-val {
+      font-weight: 700;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .calc-val.deduct {
+      color: #f43f5e;
+    }
+
+    .calc-val.total-green {
+      color: #10b981;
+      font-size: 1.05rem;
+      font-weight: 900;
+    }
+
+    /* QUARTER CARD */
+    .quarter-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 14px 16px;
+      margin-bottom: 14px;
+    }
+
+    .quarter-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .quarter-title {
+      font-size: 0.82rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+    }
+
+    .quarter-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #06b6d4;
+      background: rgba(6, 182, 212, 0.12);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      padding: 2px 8px;
+      border-radius: 6px;
+    }
+
+    /* BOTTOM DOCK */
+    .bottom-dock {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 480px;
+      background: var(--surface-glass);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-top: 1px solid var(--border);
+      padding: 8px 16px calc(var(--safe-bottom) + 8px) 16px;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      z-index: 50;
+    }
+
+    .dock-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      color: var(--text-muted);
+      font-size: 0.7rem;
+      font-weight: 700;
+      cursor: pointer;
+      background: none;
+      border: none;
+    }
+
+    .dock-item.active {
+      color: var(--accent);
+    }
+
+    .dock-item svg {
+      width: 22px;
+      height: 22px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2.2;
+    }
+
+    /* MODAL SHEETS */
+    .sheet-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+    }
+
+    .sheet-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .sheet-card {
+      width: 100%;
+      max-width: 480px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px 24px 0 0;
+      padding: 16px 20px calc(var(--safe-bottom) + 20px) 20px;
+      transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .sheet-overlay.open .sheet-card {
+      transform: translateY(0);
+    }
+
+    .sheet-handle {
+      width: 36px;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      margin: 0 auto 14px auto;
+    }
+
+    .sheet-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .sheet-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .close-btn {
+      background: var(--surface-elevated);
+      border: none;
+      color: var(--text-muted);
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .close-btn svg {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2.5;
+    }
+
+    .form-group {
+      margin-bottom: 12px;
+    }
+
+    .form-label {
+      font-size: 0.74rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 5px;
+      display: block;
+    }
+
+    .form-input, .form-select {
+      width: 100%;
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      color: var(--text);
+      padding: 10px 12px;
+      font-size: 0.88rem;
+      font-family: inherit;
+      outline: none;
+    }
+
+    .shift-types-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+
+    .shift-select-btn {
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 8px 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      cursor: pointer;
+    }
+
+    .shift-select-btn.active {
+      border-color: var(--accent);
+      background: rgba(245, 158, 11, 0.15);
+      box-shadow: 0 0 10px var(--accent-glow);
+    }
+
+    .shift-select-btn .btn-icon {
+      font-size: 1.15rem;
+    }
+
+    .shift-select-btn .btn-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .shift-select-btn .btn-sub {
+      font-size: 0.58rem;
+      color: var(--text-muted);
+    }
+
+    .status-btn-row {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+
+    .status-choice-btn {
+      flex: 1;
+      padding: 8px;
+      border-radius: var(--radius-md);
+      font-size: 0.74rem;
+      font-weight: 700;
+      border: 1px solid var(--border);
+      background: var(--surface-elevated);
+      color: var(--text);
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .status-choice-btn.selected-worked {
+      background: rgba(16, 185, 129, 0.18);
+      border-color: #10b981;
+      color: #10b981;
+    }
+
+    .status-choice-btn.selected-missed {
+      background: rgba(239, 68, 68, 0.18);
+      border-color: #ef4444;
+      color: #ef4444;
+    }
+
+    .status-choice-btn.selected-auto {
+      background: rgba(245, 158, 11, 0.18);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .toast {
+      position: fixed;
+      top: calc(var(--safe-top) + 16px);
+      left: 50%;
+      transform: translateX(-50%) translateY(-100px);
+      background: #1e2430;
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: var(--radius-full);
+      padding: 8px 18px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      z-index: 200;
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- HEADER -->
+    <header class="header">
+      <div class="brand">
+        <div class="brand-icon">🚜</div>
+        <div class="brand-text">
+          <h1>Бульдозер 2/2</h1>
+          <span id="headerSub">Д-Д-В-В-Н-Н-В-В • 8 разряд</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="icon-btn" id="themeBtn" title="Сменить тему">
+          <svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg>
+        </button>
+        <button class="icon-btn" id="exportBtn" title="Экспорт в Excel (CSV)">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        </button>
+        <button class="icon-btn" id="ratesSettingBtn" title="Настройки ставок">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- HERO METRICS CARD -->
+    <section class="hero-card">
+      <div class="hero-top">
+        <span class="hero-label">Итого на руки (чистыми)</span>
+        <span class="hero-month-tag" id="heroMonthTag">Ноябрь 2026</span>
+      </div>
+      <div class="hero-payout">
+        <span id="heroNetPay">0</span> <span class="curr">₽</span>
+      </div>
+      <div class="hero-subrow">
+        <span>Аванс (до 15-го): <b id="heroAdvance" style="color:var(--text);">0 ₽</b></span>
+        <span>Факт ставка: <span class="rate-pill"><span id="heroRealHourlyRate">0</span> ₽/ч</span></span>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-cell">
+          <div class="metric-val" id="metricHoursFact">0 <span style="font-size:0.65rem; color:var(--text-muted);">/ <span id="metricHoursNorm">176</span></span></div>
+          <div class="metric-title">Часы (факт)</div>
+        </div>
+        <div class="metric-cell">
+          <div class="metric-val" id="metricShiftsFact">0</div>
+          <div class="metric-title">Смен (11.5ч)</div>
+        </div>
+        <div class="metric-cell">
+          <div class="metric-val" id="metricNightHours">0 ч</div>
+          <div class="metric-title">Ночные (+40%)</div>
+        </div>
+        <div class="metric-cell">
+          <div class="metric-val" id="metricGrossPay">0 ₽</div>
+          <div class="metric-title">Грязными (РК)</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LIVE WORK STATUS BAR -->
+    <div class="live-status-bar">
+      <div class="live-left">
+        <span class="pulse-indicator" id="liveDot"></span>
+        <div>
+          <div class="live-text-main" id="liveShiftTitle">Расчёт расписания...</div>
+          <div class="live-text-sub" id="liveShiftCountdown">--</div>
+        </div>
+      </div>
+      <div class="live-time-now" id="liveClockTime">--:--:--</div>
+    </div>
+
+    <!-- ACTION ROW -->
+    <div class="action-row">
+      <button class="btn-action-primary" id="fillSchedule22Btn">
+        <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        График 2/2 (Д-Д-В-В-Н-Н...)
+      </button>
+      <button class="btn-action-secondary" id="todayBtn">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Сегодня
+      </button>
+    </div>
+
+    <!-- MONTH NAV -->
+    <div class="month-nav">
+      <div class="month-title" id="monthTitle">Ноябрь 2026</div>
+      <div class="nav-arrows">
+        <button class="today-pill" id="todayPillBtn">Текущий</button>
+        <button class="nav-arrow" id="prevMonthBtn">
+          <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <button class="nav-arrow" id="nextMonthBtn">
+          <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- CALENDAR GRID -->
+    <div class="calendar-container">
+      <div class="weekdays-grid">
+        <div>Пн</div>
+        <div>Вт</div>
+        <div>Ср</div>
+        <div>Чт</div>
+        <div>Пт</div>
+        <div class="weekend">Сб</div>
+        <div class="weekend">Вс</div>
+      </div>
+      <div class="days-grid" id="calendarDaysGrid">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+
+    <!-- PAYSLIP BREAKDOWN (РАСЧЁТНЫЙ ЛИСТОК) -->
+    <section class="payslip-card">
+      <div class="payslip-header">
+        <span class="payslip-title">Расчётный листок машиниста (<span id="payslipMonthLabel">Ноябрь</span>)</span>
+        <span style="font-size:0.72rem; color:var(--accent); font-weight:700; cursor:pointer;" id="editRatesPill">Ставка: 185 ₽/ч ⚙️</span>
+      </div>
+
+      <div class="calc-row">
+        <span class="calc-label">Отработано часов по графику:</span>
+        <span class="calc-val"><span id="cHours">0</span> ч × <span id="cTariff">185</span> ₽</span>
+      </div>
+      <div class="calc-row">
+        <span class="calc-label">Тарифная база:</span>
+        <span class="calc-val"><span id="cBase">0</span> ₽</span>
+      </div>
+      <div class="calc-row">
+        <span class="calc-label">Доплата за ночные (<span id="cNightPct">40</span>%):</span>
+        <span class="calc-val">+<span id="cNight">0</span> ₽ <span style="font-size:0.68rem; color:var(--text-muted);">(<span id="cNightH">0</span> ч)</span></span>
+      </div>
+      <div class="calc-row">
+        <span class="calc-label">Доплата за вредность (<span id="cHazardPct">8</span>%):</span>
+        <span class="calc-val">+<span id="cHazard">0</span> ₽</span>
+      </div>
+      <div class="calc-row" id="rowHoliday" style="display:none;">
+        <span class="calc-label">Праздничные смены (доплата 2x):</span>
+        <span class="calc-val">+<span id="cHoliday">0</span> ₽ <span style="font-size:0.68rem; color:var(--text-muted);">(<span id="cHolidayH">0</span> ч)</span></span>
+      </div>
+      <div class="calc-row">
+        <span class="calc-label">Сдельный приработок / КТУ:</span>
+        <span class="calc-val" style="color:#fbbf24;">+<span id="cBonus">0</span> ₽</span>
+      </div>
+
+      <div class="calc-row highlight">
+        <span class="calc-label">Итого до районного коэфф.:</span>
+        <span class="calc-val"><span id="cBeforeRK">0</span> ₽</span>
+      </div>
+      <div class="calc-row">
+        <span class="calc-label">Районный коэффициент (<span id="cRkVal">1.3</span>):</span>
+        <span class="calc-val" style="color:#38bdf8;">+<span id="cRkDiff">0</span> ₽</span>
+      </div>
+      <div class="calc-row">
+        <span class="calc-label"><b>Грязными (начислено):</b></span>
+        <span class="calc-val" style="font-weight:800;"><span id="cGross">0</span> ₽</span>
+      </div>
+
+      <div class="calc-row" style="margin-top:4px;">
+        <span class="calc-label">Удержание НДФЛ (13%):</span>
+        <span class="calc-val deduct">−<span id="cNdfl">0</span> ₽</span>
+      </div>
+      <div class="calc-row" id="rowUnion" style="display:none;">
+        <span class="calc-label">Профсоюзный взнос (1%):</span>
+        <span class="calc-val deduct">−<span id="cUnion">0</span> ₽</span>
+      </div>
+
+      <div class="calc-row highlight" style="border-top:2px solid var(--border); margin-top:8px; padding-top:10px;">
+        <span class="calc-label" style="font-size:0.95rem; font-weight:800; color:var(--text);">К ВЫПЛАТЕ НА РУКИ:</span>
+        <span class="calc-val total-green"><span id="cNet">0</span> ₽</span>
+      </div>
+    </section>
+
+    <!-- QUARTERLY OVERTIME SECTION -->
+    <section class="quarter-card">
+      <div class="quarter-top">
+        <span class="quarter-title">Суммированный учёт (Переработки за квартал)</span>
+        <span class="quarter-badge" id="quarterBadgeName">IV Квартал</span>
+      </div>
+      <div style="font-size:0.75rem; color:var(--text-muted); line-height:1.4; margin-bottom:8px;">
+        Факт за 3 мес: <b style="color:var(--text);" id="qFactH">0 ч</b> | Норма: <b style="color:var(--text);" id="qNormH">528 ч</b>
+      </div>
+      <div class="calc-row">
+        <span class="calc-label">Переработка (сверхурочные):</span>
+        <span class="calc-val" id="qOvertimeH">0 ч</span>
+      </div>
+      <div class="calc-row">
+        <span class="calc-label">Оплата (первые 2ч ×1.5, далее ×2.0):</span>
+        <span class="calc-val" style="color:#10b981;">+<span id="qOvertimePay">0</span> ₽ на руки</span>
+      </div>
+    </section>
+
+    <!-- BOTTOM DOCK -->
+    <nav class="bottom-dock">
+      <button class="dock-item active" id="dockCalendar">
+        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Календарь
+      </button>
+      <button class="dock-item" id="dockGenerator">
+        <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        График 2/2
+      </button>
+      <button class="dock-item" id="dockRates">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Ставки
+      </button>
+      <button class="dock-item" id="dockExport">
+        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Excel CSV
+      </button>
+    </nav>
+
+    <!-- TOAST NOTIFICATION -->
+    <div class="toast" id="toast">
+      <span id="toastIcon">🚜</span>
+      <span id="toastMsg">Готово</span>
+    </div>
+
+    <!-- SHEET: PATTERN 2/2 GENERATOR -->
+    <div class="sheet-overlay" id="patternSheet">
+      <div class="sheet-card">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">
+          <div class="sheet-title">График 2/2 (Д-Д-В-В-Н-Н-В-В)</div>
+          <button class="close-btn" onclick="closeSheet('patternSheet')">
+            <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+
+        <p style="font-size:0.78rem; color:var(--text-muted); margin-bottom:14px; line-height:1.4;">
+          Полный цикл 8 дней:<br>
+          <b>☀️ 2 дня день (11.5ч)</b> → <b>☕ 2 дня отдых</b> → <b>🌙 2 дня ночь (11.5ч, 8ч ночь)</b> → <b>☕ 2 дня отдых</b>.
+        </p>
+
+        <div class="form-group">
+          <label class="form-label">Опорная дата (точка отсчёта):</label>
+          <input type="date" class="form-input" id="patternAnchorDate" value="2026-11-18">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Какая смена выпадает на эту дату:</label>
+          <select class="form-select" id="patternAnchorStep">
+            <option value="4" selected>🌙 1-я ночная смена (18 ноября)</option>
+            <option value="5">🌙 2-я ночная смена</option>
+            <option value="6">☕ 1-й выходной (отсыпной после ночи)</option>
+            <option value="7">☕ 2-й выходной</option>
+            <option value="0">☀️ 1-я дневная смена</option>
+            <option value="1">☀️ 2-я дневная смена</option>
+            <option value="2">☕ 1-й выходной после дня</option>
+            <option value="3">☕ 2-й выходной</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Период заполнения графика:</label>
+          <select class="form-select" id="patternPeriod">
+            <option value="1">На 1 месяц</option>
+            <option value="3">На 3 месяца (квартал)</option>
+            <option value="6" selected>На 6 месяцев</option>
+            <option value="12">На 1 год вперед</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Режим записи:</label>
+          <select class="form-select" id="patternMode">
+            <option value="overwrite">Перезаписать дни в периоде</option>
+            <option value="empty_only">Заполнить только пустые дни</option>
+          </select>
+        </div>
+
+        <div style="display:flex; gap:10px; margin-top:20px;">
+          <button class="btn-action-primary" style="flex:1;" id="btnApplyPattern22">
+            ⚡ Применить график
+          </button>
+          <button class="btn-action-secondary" style="color:#f43f5e;" id="btnClearShifts">
+            Сброс
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SHEET: DAY DETAIL MODAL -->
+    <div class="sheet-overlay" id="daySheet">
+      <div class="sheet-card">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">
+          <div>
+            <div class="sheet-title" id="daySheetDate">18 Ноября 2026</div>
+            <div style="font-size:0.75rem; color:var(--text-muted);" id="daySheetWeekday">Среда</div>
+          </div>
+          <button class="close-btn" onclick="closeSheet('daySheet')">
+            <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+
+        <label class="form-label">Тип смены:</label>
+        <div class="shift-types-grid" id="shiftTypePicker">
+          <div class="shift-select-btn" data-type="day">
+            <span class="btn-icon">☀️</span>
+            <span class="btn-label">Дневная</span>
+            <span class="btn-sub">11.5 ч</span>
+          </div>
+          <div class="shift-select-btn" data-type="night">
+            <span class="btn-icon">🌙</span>
+            <span class="btn-label">Ночная</span>
+            <span class="btn-sub">11.5 ч (8ч ночь)</span>
+          </div>
+          <div class="shift-select-btn" data-type="holiday">
+            <span class="btn-icon">🎆</span>
+            <span class="btn-label">Праздничная</span>
+            <span class="btn-sub">11.5 ч (2x)</span>
+          </div>
+          <div class="shift-select-btn" data-type="extra">
+            <span class="btn-icon">⚡</span>
+            <span class="btn-label">Подработка</span>
+            <span class="btn-sub">доп. смена</span>
+          </div>
+          <div class="shift-select-btn" data-type="sleep">
+            <span class="btn-icon">🛌</span>
+            <span class="btn-label">Отсыпной</span>
+            <span class="btn-sub">после ночи</span>
+          </div>
+          <div class="shift-select-btn" data-type="off">
+            <span class="btn-icon">☕</span>
+            <span class="btn-label">Выходной</span>
+            <span class="btn-sub">отдых</span>
+          </div>
+          <div class="shift-select-btn" data-type="vacation">
+            <span class="btn-icon">🏖️</span>
+            <span class="btn-label">Отпуск</span>
+            <span class="btn-sub">отпускные</span>
+          </div>
+          <div class="shift-select-btn" data-type="sick">
+            <span class="btn-icon">🩺</span>
+            <span class="btn-label">Больничный</span>
+            <span class="btn-sub">по листку</span>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:12px;">
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label">Отработано часов:</label>
+            <input type="number" step="0.5" class="form-input" id="dayHoursInput" value="11.5">
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label">Из них ночных часов:</label>
+            <input type="number" step="0.5" class="form-input" id="dayNightHoursInput" value="0">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Отметка выполнения:</label>
+          <div class="status-btn-row">
+            <div class="status-choice-btn" id="stAuto" data-st="auto">🤖 Авто (по часам)</div>
+            <div class="status-choice-btn" id="stWorked" data-st="worked">✅ Отработано</div>
+            <div class="status-choice-btn" id="stMissed" data-st="missed">❌ Не вышел</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Заметка (участок, бульдозер, премия):</label>
+          <input type="text" class="form-input" id="dayNoteInput" placeholder="Например: CAT D9, вскрыша, 2000 т">
+        </div>
+
+        <div style="display:flex; gap:10px; margin-top:16px;">
+          <button class="btn-action-primary" style="flex:1;" id="btnSaveDay">
+            Сохранить день
+          </button>
+          <button class="btn-action-secondary" style="color:#f43f5e;" id="btnDeleteDay">
+            Удалить
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SHEET: RATES & SALARY CONFIG -->
+    <div class="sheet-overlay" id="ratesSheet">
+      <div class="sheet-card">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">
+          <div class="sheet-title">Настройки ставок бульдозериста</div>
+          <button class="close-btn" onclick="closeSheet('ratesSheet')">
+            <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:12px;">
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label">Тарифная ставка (₽/ч):</label>
+            <input type="number" step="0.01" class="form-input" id="cfgTariffRate" value="185">
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label">Норма часов месяца:</label>
+            <input type="number" class="form-input" id="cfgMonthNorm" value="176">
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:12px;">
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label">Ночные часы (%):</label>
+            <input type="number" class="form-input" id="cfgNightPct" value="40">
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label">Надбавка за вредность (%):</label>
+            <input type="number" class="form-input" id="cfgHazardPct" value="8">
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:12px;">
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label">Районный коэфф. (РК):</label>
+            <input type="number" step="0.05" class="form-input" id="cfgRk" value="1.3">
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label">Длительность смены (ч):</label>
+            <input type="number" step="0.5" class="form-input" id="cfgShiftLen" value="11.5">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Сдельный приработок / КТУ за месяц (₽):</label>
+          <input type="number" class="form-input" id="cfgBonusAmount" value="65000" placeholder="Сделка в рублях">
+          <span style="font-size:0.68rem; color:var(--text-muted); margin-top:3px; display:block;">
+            💡 При сделке ~65 000 ₽ ставка «на руки» составит ~750 ₽/час.
+          </span>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px;">
+          <input type="checkbox" id="cfgUnionCheck" style="width:18px; height:18px;">
+          <label for="cfgUnionCheck" style="font-size:0.78rem; font-weight:700; color:var(--text);">
+            Вычитать профсоюзный взнос 1%
+          </label>
+        </div>
+
+        <div style="margin-top:16px;">
+          <button class="btn-action-primary" style="width:100%;" id="btnSaveRates">
+            Сохранить ставки
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* =====================================================================
+       BULLDOZER OPERATOR 8th GRADE — 2/2 CYCLE (8-DAY PATTERN)
+       Day 1: День 1 (11.5ч)
+       Day 2: День 2 (11.5ч)
+       Day 3: Выходной 1
+       Day 4: Выходной 2
+       Day 5: Ночь 1 (11.5ч, 8ч ночь)  <-- 18 ноября 2026 (СЕГОДНЯ)
+       Day 6: Ночь 2 (11.5ч, 8ч ночь)  <-- 19 ноября 2026
+       Day 7: Отсыпной                 <-- 20 ноября 2026
+       Day 8: Выходной                 <-- 21 ноября 2026
+    ===================================================================== */
+    const STORAGE_KEY = 'bulldozer_shift_data_v4';
+    const CONFIG_KEY = 'bulldozer_config_v4';
+
+    const SHIFT_DEFS = {
+      day: { label: 'Дневная', abbr: 'Д', hours: 11.5, nightHours: 0, class: 'type-day', isWork: true },
+      night: { label: 'Ночная', abbr: 'Н', hours: 11.5, nightHours: 8, class: 'type-night', isWork: true },
+      holiday: { label: 'Праздничная', abbr: 'П', hours: 11.5, nightHours: 0, class: 'type-holiday', isWork: true },
+      extra: { label: 'Подработка', abbr: 'Подр', hours: 11.5, nightHours: 0, class: 'type-extra', isWork: true },
+      sleep: { label: 'Отсыпной', abbr: 'Отс', hours: 0, nightHours: 0, class: 'type-sleep', isWork: false },
+      off: { label: 'Выходной', abbr: 'В', hours: 0, nightHours: 0, class: 'type-off', isWork: false },
+      vacation: { label: 'Отпуск', abbr: 'О', hours: 0, nightHours: 0, class: 'type-vacation', isWork: false },
+      sick: { label: 'Больничный', abbr: 'Б', hours: 0, nightHours: 0, class: 'type-sick', isWork: false }
+    };
+
+    const CYCLE_8_DAYS = [
+      { step: 0, name: '1-я Дневная', type: 'day', hours: 11.5, nightHours: 0 },
+      { step: 1, name: '2-я Дневная', type: 'day', hours: 11.5, nightHours: 0 },
+      { step: 2, name: '1-й Выходной', type: 'off', hours: 0, nightHours: 0 },
+      { step: 3, name: '2-й Выходной', type: 'off', hours: 0, nightHours: 0 },
+      { step: 4, name: '1-я Ночная', type: 'night', hours: 11.5, nightHours: 8 },  // Nov 18
+      { step: 5, name: '2-я Ночная', type: 'night', hours: 11.5, nightHours: 8 },  // Nov 19
+      { step: 6, name: 'Отсыпной', type: 'sleep', hours: 0, nightHours: 0 },       // Nov 20
+      { step: 7, name: 'Выходной', type: 'off', hours: 0, nightHours: 0 }          // Nov 21
+    ];
+
+    let appData = { shifts: {} };
+
+    let appConfig = {
+      tariffRate: 185.0,
+      monthNorm: 176,
+      nightPct: 40,
+      hazardPct: 8,
+      rk: 1.3,
+      bonusAmount: 65000,
+      unionDeduct: false,
+      shiftLength: 11.5,
+      theme: 'dark'
+    };
+
+    function loadData() {
+      try {
+        const d = localStorage.getItem(STORAGE_KEY);
+        if (d) {
+          appData = JSON.parse(d);
+        } else {
+          // Pre-fill schedule anchored at 18 Nov 2026 (Night 1)
+          autoPopulateFromAnchor('2026-11-18', 4, 6);
+        }
+      } catch (e) {
+        autoPopulateFromAnchor('2026-11-18', 4, 6);
+      }
+
+      try {
+        const c = localStorage.getItem(CONFIG_KEY);
+        if (c) appConfig = Object.assign(appConfig, JSON.parse(c));
+      } catch (e) {}
+    }
+
+    function saveData() {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(appData)); } catch (e) {}
+    }
+
+    function saveConfig() {
+      try { localStorage.setItem(CONFIG_KEY, JSON.stringify(appConfig)); } catch (e) {}
+    }
+
+    function autoPopulateFromAnchor(anchorDateStr, anchorStepIndex, durationMonths) {
+      const [ay, am, ad] = anchorDateStr.split('-').map(Number);
+      const anchorDate = new Date(ay, am - 1, ad);
+
+      const startRange = new Date(ay, am - 1, 1);
+      const endRange = new Date(ay, am - 1 + durationMonths, 0);
+
+      let cur = new Date(startRange);
+      while (cur <= endRange) {
+        const dateKey = formatDateKey(cur.getFullYear(), cur.getMonth(), cur.getDate());
+        const diffDays = Math.round((cur - anchorDate) / 86400000);
+        let step = (anchorStepIndex + (diffDays % 8)) % 8;
+        if (step < 0) step += 8;
+
+        const cycleItem = CYCLE_8_DAYS[step];
+        appData.shifts[dateKey] = {
+          type: cycleItem.type,
+          hours: cycleItem.hours,
+          nightHours: cycleItem.nightHours,
+          status: 'auto',
+          note: ''
+        };
+
+        cur.setDate(cur.getDate() + 1);
+      }
+      saveData();
+    }
+
+    /* DATE UTILITIES */
+    let viewDate = new Date();
+    let selectedDateStr = null;
+
+    function formatDateKey(y, mIndex, d) {
+      const mm = String(mIndex + 1).padStart(2, '0');
+      const dd = String(d).padStart(2, '0');
+      return `${y}-${mm}-${dd}`;
+    }
+
+    function getNow() {
+      return new Date();
+    }
+
+    const MONTHS_RU = [
+      'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+      'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
+    ];
+
+    /* LIVE CLOCK & AUTO WORK STATUS */
+    function checkShiftIsWorked(dateKey, shift) {
+      if (!shift || !SHIFT_DEFS[shift.type] || !SHIFT_DEFS[shift.type].isWork) {
+        return false;
+      }
+      if (shift.status === 'worked') return true;
+      if (shift.status === 'missed') return false;
+
+      const now = getNow();
+      const [y, m, d] = dateKey.split('-').map(Number);
+      
+      let shiftEnd = new Date(y, m - 1, d, 20, 0, 0);
+      if (shift.type === 'night') {
+        shiftEnd = new Date(y, m - 1, d + 1, 8, 0, 0);
+      }
+
+      return now >= shiftEnd;
+    }
+
+    function updateLiveBar() {
+      const now = getNow();
+      
+      const hh = String(now.getHours()).padStart(2, '0');
+      const mm = String(now.getMinutes()).padStart(2, '0');
+      const ss = String(now.getSeconds()).padStart(2, '0');
+      const clockEl = document.getElementById('liveClockTime');
+      if (clockEl) clockEl.textContent = `${hh}:${mm}:${ss}`;
+
+      const todayKey = formatDateKey(now.getFullYear(), now.getMonth(), now.getDate());
+      const todayShift = appData.shifts[todayKey];
+
+      const dot = document.getElementById('liveDot');
+      const title = document.getElementById('liveShiftTitle');
+      const countdown = document.getElementById('liveShiftCountdown');
+
+      if (!dot || !title || !countdown) return;
+
+      if (!todayShift || todayShift.type === 'off') {
+        dot.style.background = '#64748b';
+        dot.style.boxShadow = 'none';
+        title.textContent = '☕ Сегодня выходной день';
+        countdown.textContent = 'Смен по графику нет (отдых)';
+      } else if (todayShift.type === 'sleep') {
+        dot.style.background = '#818cf8';
+        dot.style.boxShadow = '0 0 8px #818cf8';
+        title.textContent = '🛌 Отсыпной день (после ночи)';
+        countdown.textContent = 'Восстановление сил';
+      } else {
+        const isWorked = checkShiftIsWorked(todayKey, todayShift);
+        const shiftDef = SHIFT_DEFS[todayShift.type] || SHIFT_DEFS.day;
+
+        const [y, m, d] = todayKey.split('-').map(Number);
+        let shiftStart = new Date(y, m - 1, d, todayShift.type === 'night' ? 20 : 8, 0, 0);
+        let shiftEnd = new Date(y, m - 1, todayShift.type === 'night' ? d + 1 : d, todayShift.type === 'night' ? 8 : 20, 0, 0);
+
+        if (now >= shiftStart && now <= shiftEnd) {
+          dot.style.background = '#06b6d4';
+          dot.style.boxShadow = '0 0 10px #06b6d4';
+          title.textContent = `⚡ Смена активна: ${shiftDef.label} (11.5 ч)`;
+          const diffMs = shiftEnd - now;
+          const remH = Math.floor(diffMs / 3600000);
+          const remM = Math.floor((diffMs % 3600000) / 60000);
+          countdown.textContent = `До конца смены: ${remH} ч ${remM} мин`;
+        } else if (isWorked) {
+          dot.style.background = '#10b981';
+          dot.style.boxShadow = '0 0 8px #10b981';
+          title.textContent = `✅ ${shiftDef.label} отработана (${todayShift.hours} ч)`;
+          countdown.textContent = 'Статус: Отработано (авто)';
+        } else {
+          dot.style.background = todayShift.type === 'night' ? '#818cf8' : '#f59e0b';
+          dot.style.boxShadow = todayShift.type === 'night' ? '0 0 8px #818cf8' : '0 0 8px #f59e0b';
+          title.textContent = `⏳ Сегодня: ${shiftDef.label} (11.5 ч)`;
+          if (now < shiftStart) {
+            const diffMs = shiftStart - now;
+            const h = Math.floor(diffMs / 3600000);
+            const m = Math.floor((diffMs % 3600000) / 60000);
+            countdown.textContent = `Начало через ${h} ч ${m} мин (в ${todayShift.type === 'night' ? '20:00' : '08:00'})`;
+          } else {
+            countdown.textContent = 'Ожидание выхода';
+          }
+        }
+      }
+    }
+
+    /* SALARY & PAYSLIP CALCULATIONS */
+    function calculateMonthEarnings(year, monthIndex) {
+      const lastDay = new Date(year, monthIndex + 1, 0).getDate();
+
+      let totalWorkHours = 0;
+      let totalWorkShifts = 0;
+      let totalNightHours = 0;
+      let totalHolidayHours = 0;
+
+      let advanceWorkHours = 0;
+      let advanceNightHours = 0;
+
+      for (let day = 1; day <= lastDay; day++) {
+        const dateKey = formatDateKey(year, monthIndex, day);
+        const shift = appData.shifts[dateKey];
+        if (!shift) continue;
+
+        const def = SHIFT_DEFS[shift.type];
+        if (def && def.isWork) {
+          const isWorked = checkShiftIsWorked(dateKey, shift);
+          if (isWorked) {
+            const h = Number(shift.hours) || def.hours;
+            const nh = Number(shift.nightHours) || def.nightHours;
+
+            totalWorkHours += h;
+            totalWorkShifts++;
+            totalNightHours += nh;
+
+            if (shift.type === 'holiday') {
+              totalHolidayHours += h;
+            }
+
+            if (day <= 15) {
+              advanceWorkHours += h;
+              advanceNightHours += nh;
+            }
+          }
+        }
+      }
+
+      const tariff = Number(appConfig.tariffRate) || 185.0;
+      const nightPct = (Number(appConfig.nightPct) || 40) / 100;
+      const hazardPct = (Number(appConfig.hazardPct) || 8) / 100;
+      const rk = Number(appConfig.rk) || 1.3;
+      const bonus = Number(appConfig.bonusAmount) || 0;
+
+      const basePay = totalWorkHours * tariff;
+      const nightPay = totalNightHours * tariff * nightPct;
+      const hazardPay = totalWorkHours * tariff * hazardPct;
+      const holidayPay = totalHolidayHours * tariff * 1.0;
+
+      const beforeRk = basePay + nightPay + hazardPay + holidayPay + bonus;
+      const grossPay = beforeRk * rk;
+
+      const ndfl = grossPay * 0.13;
+      const union = appConfig.unionDeduct ? (grossPay * 0.01) : 0;
+      const netPay = grossPay - ndfl - union;
+
+      const realHourlyRate = totalWorkHours > 0 ? Math.round(netPay / totalWorkHours) : 0;
+
+      const advBase = advanceWorkHours * tariff;
+      const advNight = advanceNightHours * tariff * nightPct;
+      const advHazard = advanceWorkHours * tariff * hazardPct;
+      const advBonus = bonus * 0.45;
+      const advGross = (advBase + advNight + advHazard + advBonus) * rk;
+      const advNet = Math.round(advGross * 0.87);
+
+      return {
+        totalWorkHours,
+        totalWorkShifts,
+        totalNightHours,
+        totalHolidayHours,
+        basePay: Math.round(basePay),
+        nightPay: Math.round(nightPay),
+        hazardPay: Math.round(hazardPay),
+        holidayPay: Math.round(holidayPay),
+        bonusPay: Math.round(bonus),
+        beforeRk: Math.round(beforeRk),
+        rkDiff: Math.round(grossPay - beforeRk),
+        grossPay: Math.round(grossPay),
+        ndfl: Math.round(ndfl),
+        union: Math.round(union),
+        netPay: Math.round(netPay),
+        realHourlyRate,
+        advanceNet: advNet
+      };
+    }
+
+    function calculateQuarterOvertime(year, monthIndex) {
+      const qIndex = Math.floor(monthIndex / 3);
+      const qNames = ['I Квартал (Янв-Мар)', 'II Квартал (Апр-Июн)', 'III Квартал (Июл-Сен)', 'IV Квартал (Окт-Дек)'];
+
+      let qFactH = 0;
+      const qNormH = (Number(appConfig.monthNorm) || 176) * 3;
+
+      for (let m = qIndex * 3; m < (qIndex + 1) * 3; m++) {
+        const lastDay = new Date(year, m + 1, 0).getDate();
+        for (let d = 1; d <= lastDay; d++) {
+          const key = formatDateKey(year, m, d);
+          const shift = appData.shifts[key];
+          if (shift && SHIFT_DEFS[shift.type] && SHIFT_DEFS[shift.type].isWork) {
+            if (checkShiftIsWorked(key, shift)) {
+              qFactH += Number(shift.hours) || 11.5;
+            }
+          }
+        }
+      }
+
+      const diff = Math.max(0, qFactH - qNormH);
+      const tariff = Number(appConfig.tariffRate) || 185.0;
+      const rk = Number(appConfig.rk) || 1.3;
+
+      let overtimePayGross = 0;
+      if (diff > 0) {
+        const first2 = Math.min(2, diff);
+        const rest = diff - first2;
+        overtimePayGross = ((first2 * tariff * 1.5) + (rest * tariff * 2.0)) * rk;
+      }
+      const overtimePayNet = Math.round(overtimePayGross * 0.87);
+
+      return {
+        qName: qNames[qIndex],
+        qFactH,
+        qNormH,
+        diffH: diff,
+        netPay: overtimePayNet
+      };
+    }
+
+    /* CALENDAR RENDERER */
+    function renderCalendar() {
+      const y = viewDate.getFullYear();
+      const m = viewDate.getMonth();
+
+      const mTitle = document.getElementById('monthTitle');
+      if (mTitle) mTitle.textContent = `${MONTHS_RU[m]} ${y}`;
+      
+      const heroTag = document.getElementById('heroMonthTag');
+      if (heroTag) heroTag.textContent = `${MONTHS_RU[m]} ${y}`;
+      
+      const psLabel = document.getElementById('payslipMonthLabel');
+      if (psLabel) psLabel.textContent = MONTHS_RU[m];
+
+      const grid = document.getElementById('calendarDaysGrid');
+      if (!grid) return;
+      grid.innerHTML = '';
+
+      const firstDay = new Date(y, m, 1);
+      const lastDay = new Date(y, m + 1, 0).getDate();
+
+      let startDayOfWeek = firstDay.getDay() - 1;
+      if (startDayOfWeek === -1) startDayOfWeek = 6;
+
+      const prevMonthLastDay = new Date(y, m, 0).getDate();
+      const today = getNow();
+      const todayKey = formatDateKey(today.getFullYear(), today.getMonth(), today.getDate());
+
+      // Preceding days
+      for (let i = startDayOfWeek - 1; i >= 0; i--) {
+        const d = prevMonthLastDay - i;
+        const cell = document.createElement('div');
+        cell.className = 'day-cell other-month';
+        cell.innerHTML = `<span class="day-number">${d}</span>`;
+        grid.appendChild(cell);
+      }
+
+      // Current month days
+      for (let day = 1; day <= lastDay; day++) {
+        const dateKey = formatDateKey(y, m, day);
+        const shift = appData.shifts[dateKey];
+        const isToday = dateKey === todayKey;
+
+        const cell = document.createElement('div');
+        cell.className = `day-cell ${isToday ? 'is-today' : ''}`;
+        cell.dataset.date = dateKey;
+
+        let checkmark = '';
+        let pillHtml = '';
+
+        if (shift && shift.type) {
+          const def = SHIFT_DEFS[shift.type] || SHIFT_DEFS.off;
+          const isWorked = checkShiftIsWorked(dateKey, shift);
+
+          if (def.isWork) {
+            if (isWorked) {
+              checkmark = '<span style="color:#10b981; font-weight:900;">✓</span>';
+            } else if (shift.status === 'missed') {
+              checkmark = '<span style="color:#ef4444; font-weight:900;">✕</span>';
+            } else {
+              checkmark = '<span style="color:var(--text-dim);">○</span>';
+            }
+          }
+
+          pillHtml = `
+            <div class="shift-pill ${def.class}">
+              <span class="shift-name">${def.abbr}</span>
+              ${def.hours > 0 ? `<span class="shift-hours">${shift.hours || def.hours}ч</span>` : ''}
+            </div>
+          `;
+        }
+
+        cell.innerHTML = `
+          <div class="day-top">
+            <span class="day-number">${day}</span>
+            <span class="day-check">${checkmark}</span>
+          </div>
+          ${pillHtml}
+        `;
+
+        cell.addEventListener('click', () => openDayModal(dateKey));
+        grid.appendChild(cell);
+      }
+
+      // Trailing days
+      const totalCells = startDayOfWeek + lastDay;
+      const remaining = (7 - (totalCells % 7)) % 7;
+      for (let day = 1; day <= remaining; day++) {
+        const cell = document.createElement('div');
+        cell.className = 'day-cell other-month';
+        cell.innerHTML = `<span class="day-number">${day}</span>`;
+        grid.appendChild(cell);
+      }
+
+      // Update Figures
+      const calc = calculateMonthEarnings(y, m);
+
+      document.getElementById('heroNetPay').textContent = calc.netPay.toLocaleString('ru-RU');
+      document.getElementById('heroAdvance').textContent = `${calc.advanceNet.toLocaleString('ru-RU')} ₽`;
+      document.getElementById('heroRealHourlyRate').textContent = calc.realHourlyRate;
+
+      document.getElementById('metricHoursFact').innerHTML = `${calc.totalWorkHours} <span style="font-size:0.65rem; color:var(--text-muted);">/ <span id="metricHoursNorm">${appConfig.monthNorm}</span></span>`;
+      document.getElementById('metricShiftsFact').textContent = calc.totalWorkShifts;
+      document.getElementById('metricNightHours').textContent = `${calc.totalNightHours} ч`;
+      document.getElementById('metricGrossPay').textContent = `${calc.grossPay.toLocaleString('ru-RU')} ₽`;
+
+      // Payslip table
+      document.getElementById('cHours').textContent = calc.totalWorkHours;
+      document.getElementById('cTariff').textContent = appConfig.tariffRate;
+      document.getElementById('cBase').textContent = calc.basePay.toLocaleString('ru-RU');
+      document.getElementById('cNightPct').textContent = appConfig.nightPct;
+      document.getElementById('cNight').textContent = calc.nightPay.toLocaleString('ru-RU');
+      document.getElementById('cNightH').textContent = calc.totalNightHours;
+      document.getElementById('cHazardPct').textContent = appConfig.hazardPct;
+      document.getElementById('cHazard').textContent = calc.hazardPay.toLocaleString('ru-RU');
+
+      if (calc.holidayPay > 0) {
+        document.getElementById('rowHoliday').style.display = 'flex';
+        document.getElementById('cHoliday').textContent = calc.holidayPay.toLocaleString('ru-RU');
+        document.getElementById('cHolidayH').textContent = calc.totalHolidayHours;
+      } else {
+        document.getElementById('rowHoliday').style.display = 'none';
+      }
+
+      document.getElementById('cBonus').textContent = calc.bonusPay.toLocaleString('ru-RU');
+      document.getElementById('cBeforeRK').textContent = calc.beforeRk.toLocaleString('ru-RU');
+      document.getElementById('cRkVal').textContent = appConfig.rk;
+      document.getElementById('cRkDiff').textContent = calc.rkDiff.toLocaleString('ru-RU');
+      document.getElementById('cGross').textContent = calc.grossPay.toLocaleString('ru-RU');
+      document.getElementById('cNdfl').textContent = calc.ndfl.toLocaleString('ru-RU');
+
+      if (appConfig.unionDeduct) {
+        document.getElementById('rowUnion').style.display = 'flex';
+        document.getElementById('cUnion').textContent = calc.union.toLocaleString('ru-RU');
+      } else {
+        document.getElementById('rowUnion').style.display = 'none';
+      }
+
+      document.getElementById('cNet').textContent = calc.netPay.toLocaleString('ru-RU');
+      document.getElementById('editRatesPill').textContent = `Ставка: ${appConfig.tariffRate} ₽/ч ⚙️`;
+
+      // Overtime
+      const qOver = calculateQuarterOvertime(y, m);
+      document.getElementById('quarterBadgeName').textContent = qOver.qName;
+      document.getElementById('qFactH').textContent = `${qOver.qFactH} ч`;
+      document.getElementById('qNormH').textContent = `${qOver.qNormH} ч`;
+      document.getElementById('qOvertimeH').textContent = `${qOver.diffH} ч`;
+      document.getElementById('qOvertimePay').textContent = qOver.netPay.toLocaleString('ru-RU');
+    }
+
+    /* 2/2 CYCLE GENERATOR TRIGGER */
+    function apply22PatternTrigger() {
+      const anchorVal = document.getElementById('patternAnchorDate').value;
+      if (!anchorVal) {
+        showToast('⚠️ Выберите дату точки отсчета', '⚠️');
+        return;
+      }
+
+      const stepIndex = parseInt(document.getElementById('patternAnchorStep').value, 10) || 4;
+      const periodMonths = parseInt(document.getElementById('patternPeriod').value, 10) || 6;
+
+      autoPopulateFromAnchor(anchorVal, stepIndex, periodMonths);
+
+      renderCalendar();
+      updateLiveBar();
+      closeSheet('patternSheet');
+      showToast('⚡ График 2/2 (Д-Д-В-В-Н-Н...) успешно применён!', '🚜');
+    }
+
+    /* DAY DETAIL MODAL */
+    let curEditType = 'day';
+    let curEditStatus = 'auto';
+
+    function openDayModal(dateKey) {
+      selectedDateStr = dateKey;
+      const [y, m, d] = dateKey.split('-').map(Number);
+      const dateObj = new Date(y, m - 1, d);
+
+      document.getElementById('daySheetDate').textContent = `${d} ${MONTHS_RU[m - 1]} ${y}`;
+      document.getElementById('daySheetWeekday').textContent = dateObj.toLocaleDateString('ru-RU', { weekday: 'long' });
+
+      const existing = appData.shifts[dateKey] || {
+        type: 'day',
+        hours: appConfig.shiftLength,
+        nightHours: 0,
+        status: 'auto',
+        note: ''
+      };
+
+      setModalShiftType(existing.type || 'day');
+      setModalStatus(existing.status || 'auto');
+
+      document.getElementById('dayHoursInput').value = existing.hours !== undefined ? existing.hours : appConfig.shiftLength;
+      document.getElementById('dayNightHoursInput').value = existing.nightHours !== undefined ? existing.nightHours : 0;
+      document.getElementById('dayNoteInput').value = existing.note || '';
+
+      openSheet('daySheet');
+    }
+
+    function setModalShiftType(type) {
+      curEditType = type;
+      document.querySelectorAll('#shiftTypePicker .shift-select-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.type === type);
+      });
+
+      const def = SHIFT_DEFS[type] || SHIFT_DEFS.off;
+      document.getElementById('dayHoursInput').value = def.hours;
+      document.getElementById('dayNightHoursInput').value = def.nightHours;
+    }
+
+    function setModalStatus(st) {
+      curEditStatus = st;
+      document.getElementById('stAuto').className = `status-choice-btn ${st === 'auto' ? 'selected-auto' : ''}`;
+      document.getElementById('stWorked').className = `status-choice-btn ${st === 'worked' ? 'selected-worked' : ''}`;
+      document.getElementById('stMissed').className = `status-choice-btn ${st === 'missed' ? 'selected-missed' : ''}`;
+    }
+
+    function saveDayModal() {
+      if (!selectedDateStr) return;
+
+      const h = parseFloat(document.getElementById('dayHoursInput').value) || 0;
+      const nh = parseFloat(document.getElementById('dayNightHoursInput').value) || 0;
+
+      appData.shifts[selectedDateStr] = {
+        type: curEditType,
+        hours: h,
+        nightHours: nh,
+        status: curEditStatus,
+        note: document.getElementById('dayNoteInput').value.trim()
+      };
+
+      saveData();
+      renderCalendar();
+      updateLiveBar();
+      closeSheet('daySheet');
+      showToast('День сохранен', '💾');
+    }
+
+    function deleteDayModal() {
+      if (!selectedDateStr) return;
+      delete appData.shifts[selectedDateStr];
+      saveData();
+      renderCalendar();
+      updateLiveBar();
+      closeSheet('daySheet');
+      showToast('Смена удалена', '🗑️');
+    }
+
+    /* RATES FORM */
+    function loadRatesForm() {
+      document.getElementById('cfgTariffRate').value = appConfig.tariffRate;
+      document.getElementById('cfgMonthNorm').value = appConfig.monthNorm;
+      document.getElementById('cfgNightPct').value = appConfig.nightPct;
+      document.getElementById('cfgHazardPct').value = appConfig.hazardPct;
+      document.getElementById('cfgRk').value = appConfig.rk;
+      document.getElementById('cfgShiftLen').value = appConfig.shiftLength;
+      document.getElementById('cfgBonusAmount').value = appConfig.bonusAmount;
+      document.getElementById('cfgUnionCheck').checked = !!appConfig.unionDeduct;
+    }
+
+    function saveRatesForm() {
+      appConfig.tariffRate = parseFloat(document.getElementById('cfgTariffRate').value) || 185;
+      appConfig.monthNorm = parseInt(document.getElementById('cfgMonthNorm').value, 10) || 176;
+      appConfig.nightPct = parseFloat(document.getElementById('cfgNightPct').value) || 40;
+      appConfig.hazardPct = parseFloat(document.getElementById('cfgHazardPct').value) || 8;
+      appConfig.rk = parseFloat(document.getElementById('cfgRk').value) || 1.3;
+      appConfig.shiftLength = parseFloat(document.getElementById('cfgShiftLen').value) || 11.5;
+      appConfig.bonusAmount = parseFloat(document.getElementById('cfgBonusAmount').value) || 0;
+      appConfig.unionDeduct = document.getElementById('cfgUnionCheck').checked;
+
+      saveConfig();
+      renderCalendar();
+      closeSheet('ratesSheet');
+      showToast('Ставки сохранены', '⚙️');
+    }
+
+    /* EXCEL / CSV EXPORT */
+    function exportToCsv() {
+      const y = viewDate.getFullYear();
+      const m = viewDate.getMonth();
+      const lastDay = new Date(y, m + 1, 0).getDate();
+
+      let csv = '\uFEFF';
+      csv += `ТАБЕЛЬ МАШИНИСТА БУЛЬДОЗЕРА (8 РАЗРЯД) ЗА ${MONTHS_RU[m].toUpperCase()} ${y}\n`;
+      csv += `Тариф:;${appConfig.tariffRate} руб/час;Районный коэфф:;${appConfig.rk};Ночные:;${appConfig.nightPct}%;Вредность:;${appConfig.hazardPct}%\n\n`;
+
+      csv += 'Дата;День недели;Тип смены;Часы;Ночные часы;Статус;Заметка\n';
+
+      for (let d = 1; d <= lastDay; d++) {
+        const k = formatDateKey(y, m, d);
+        const shift = appData.shifts[k];
+        const dateObj = new Date(y, m, d);
+        const weekday = dateObj.toLocaleDateString('ru-RU', { weekday: 'short' });
+
+        if (shift && shift.type) {
+          const def = SHIFT_DEFS[shift.type] || SHIFT_DEFS.off;
+          const isWorked = checkShiftIsWorked(k, shift);
+          csv += `${k};${weekday};${def.label};${shift.hours || def.hours};${shift.nightHours || def.nightHours};${isWorked ? 'Отработано' : 'Не отработано'};"${shift.note || ''}"\n`;
+        } else {
+          csv += `${k};${weekday};Выходной;0;0;Отдых;""\n`;
+        }
+      }
+
+      const calc = calculateMonthEarnings(y, m);
+      csv += '\nРАСЧЁТНЫЙ ЛИСТОК:\n';
+      csv += `Всего отработано часов:;${calc.totalWorkHours} ч\n`;
+      csv += `Ночные часы (+${appConfig.nightPct}%):;${calc.totalNightHours} ч;+${calc.nightPay} руб\n`;
+      csv += `Тарифная база:;${calc.basePay} руб\n`;
+      csv += `Вредность (+${appConfig.hazardPct}%):;+${calc.hazardPay} руб\n`;
+      csv += `Праздничные смены:;+${calc.holidayPay} руб\n`;
+      csv += `Сдельный приработок / КТУ:;+${calc.bonusPay} руб\n`;
+      csv += `Итого до РК:;${calc.beforeRk} руб\n`;
+      csv += `Районный коэфф (РК ${appConfig.rk}):;+${calc.rkDiff} руб\n`;
+      csv += `ГРЯЗНЫМИ (НАЧИСЛЕНО):;${calc.grossPay} руб\n`;
+      csv += `НДФЛ (13%):;-${calc.ndfl} руб\n`;
+      if (appConfig.unionDeduct) csv += `Профсоюз (1%):;-${calc.union} руб\n`;
+      csv += `К ВЫПЛАТЕ НА РУКИ:;${calc.netPay} руб\n`;
+      csv += `Средняя стоимость 1 часа на руки:;${calc.realHourlyRate} руб/час\n`;
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Табель_Бульдозер_8разряд_${y}_${String(m + 1).padStart(2, '0')}.csv`;
+      link.click();
+      URL.revokeObjectURL(url);
+      showToast('Табель скачан в Excel CSV!', '📊');
+    }
+
+    function openSheet(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('open');
+    }
+    function closeSheet(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('open');
+    }
+
+    function showToast(msg, icon = '🚜') {
+      const t = document.getElementById('toast');
+      if (!t) return;
+      document.getElementById('toastMsg').textContent = msg;
+      document.getElementById('toastIcon').textContent = icon;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2500);
+    }
+
+    /* INIT FUNCTION */
+    function initApp() {
+      loadData();
+
+      if (appConfig.theme === 'light') {
+        document.body.setAttribute('data-theme', 'light');
+      }
+
+      renderCalendar();
+      updateLiveBar();
+      setInterval(updateLiveBar, 1000);
+
+      const prevBtn = document.getElementById('prevMonthBtn');
+      if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+          viewDate.setMonth(viewDate.getMonth() - 1);
+          renderCalendar();
+        });
+      }
+
+      const nextBtn = document.getElementById('nextMonthBtn');
+      if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+          viewDate.setMonth(viewDate.getMonth() + 1);
+          renderCalendar();
+        });
+      }
+
+      const tBtn = document.getElementById('todayBtn');
+      if (tBtn) {
+        tBtn.addEventListener('click', () => {
+          viewDate = getNow();
+          renderCalendar();
+        });
+      }
+
+      const tpBtn = document.getElementById('todayPillBtn');
+      if (tpBtn) {
+        tpBtn.addEventListener('click', () => {
+          viewDate = getNow();
+          renderCalendar();
+        });
+      }
+
+      const fillBtn = document.getElementById('fillSchedule22Btn');
+      if (fillBtn) fillBtn.addEventListener('click', () => openSheet('patternSheet'));
+
+      const dockGen = document.getElementById('dockGenerator');
+      if (dockGen) dockGen.addEventListener('click', () => openSheet('patternSheet'));
+
+      const rSetBtn = document.getElementById('ratesSettingBtn');
+      if (rSetBtn) {
+        rSetBtn.addEventListener('click', () => {
+          loadRatesForm();
+          openSheet('ratesSheet');
+        });
+      }
+
+      const dockR = document.getElementById('dockRates');
+      if (dockR) {
+        dockR.addEventListener('click', () => {
+          loadRatesForm();
+          openSheet('ratesSheet');
+        });
+      }
+
+      const editRPill = document.getElementById('editRatesPill');
+      if (editRPill) {
+        editRPill.addEventListener('click', () => {
+          loadRatesForm();
+          openSheet('ratesSheet');
+        });
+      }
+
+      const expBtn = document.getElementById('exportBtn');
+      if (expBtn) expBtn.addEventListener('click', exportToCsv);
+
+      const dockExp = document.getElementById('dockExport');
+      if (dockExp) dockExp.addEventListener('click', exportToCsv);
+
+      const thBtn = document.getElementById('themeBtn');
+      if (thBtn) {
+        thBtn.addEventListener('click', () => {
+          const isL = document.body.getAttribute('data-theme') === 'light';
+          if (isL) {
+            document.body.removeAttribute('data-theme');
+            appConfig.theme = 'dark';
+          } else {
+            document.body.setAttribute('data-theme', 'light');
+            appConfig.theme = 'light';
+          }
+          saveConfig();
+        });
+      }
+
+      const applyPBtn = document.getElementById('btnApplyPattern22');
+      if (applyPBtn) applyPBtn.addEventListener('click', apply22PatternTrigger);
+
+      const clrBtn = document.getElementById('btnClearShifts');
+      if (clrBtn) {
+        clrBtn.addEventListener('click', () => {
+          if (confirm('Сбросить весь график смен?')) {
+            appData.shifts = {};
+            saveData();
+            renderCalendar();
+            updateLiveBar();
+            closeSheet('patternSheet');
+            showToast('График очищен', '🗑️');
+          }
+        });
+      }
+
+      document.querySelectorAll('#shiftTypePicker .shift-select-btn').forEach(btn => {
+        btn.addEventListener('click', () => setModalShiftType(btn.dataset.type));
+      });
+
+      const sAuto = document.getElementById('stAuto');
+      if (sAuto) sAuto.addEventListener('click', () => setModalStatus('auto'));
+
+      const sWork = document.getElementById('stWorked');
+      if (sWork) sWork.addEventListener('click', () => setModalStatus('worked'));
+
+      const sMiss = document.getElementById('stMissed');
+      if (sMiss) sMiss.addEventListener('click', () => setModalStatus('missed'));
+
+      const sDay = document.getElementById('btnSaveDay');
+      if (sDay) sDay.addEventListener('click', saveDayModal);
+
+      const dDay = document.getElementById('btnDeleteDay');
+      if (dDay) dDay.addEventListener('click', deleteDayModal);
+
+      const sRates = document.getElementById('btnSaveRates');
+      if (sRates) sRates.addEventListener('click', saveRatesForm);
+
+      document.querySelectorAll('.sheet-overlay').forEach(sheet => {
+        sheet.addEventListener('click', (e) => {
+          if (e.target === sheet) sheet.classList.remove('open');
+        });
+      });
+    }
+
+    /* Bulletproof initialization (works even if DOMContentLoaded already passed) */
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initApp);
+    } else {
+      initApp();
+    }
+  </script>
+</body>
+</html>
